@@ -6,12 +6,60 @@ const calculator = {
   operator: null,
 };
 
+// this function is for inputing digit
 function inputDigit(digit){
-  const { displayValue } = calculator;
+  const { displayValue, waitingForSecondOperand } = calculator;
+
   //overwrite `displayValue` if the current value is '0' otherwise append to it
   // if displayValue === 0 is true then change it to digit, if not add displayValue with digit
-  calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
+  if (waitingForSecondOperand === true) {
+    calculator.displayValue = digit;
+    calculator.waitingForSecondOperand = false;
+  } else {
+    calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
+  }
+
+  console.log(calculator);
 }
+
+// this function is for inputing decimal
+function inputDecimal(dot){
+  // if the displayValue does not container a decimal point
+  if (!calculator.displayValue.includes(dot)) {
+    // append the decimal point
+    calculator.displayValue += dot;
+  }
+}
+
+// function for second operator
+function handleOperator(nextOperator){
+  const { firstOperand, displayValue, operator } = calculator;
+  const inputValue = parseFloat(displayValue);
+
+  // Storing result in first operand if it does not exist already
+  if(firstOperand === null){
+    calculator.firstOperan = inputValue;
+  } else if(operator) {
+    const result = performCalculation[operator](firstOperand, inputValue);
+
+    calculator.displayValue = String(result);
+    calculator.firstOperand = result;
+  }
+
+  calculator.waitingForSecondOperand = true;
+  calculator.operator = nextOperator;
+  console.log(calculator);
+}
+
+// Object for perform a calculation
+const performCalculation = {
+  '/': (firstOperand, secondOperand) => firstOperand / secondOperand,
+  '*': (firstOperand, secondOperand) => firstOperand * secondOperand,
+  '+': (firstOperand, secondOperand) => firstOperand + secondOperand,
+  '-': (firstOperand, secondOperand) => firstOperand - secondOperand,
+  '=': (firstOperand, secondOperand) => secondOperand
+};
+
 
 // function for updating the calculator screen
 function updateDisplay(){
@@ -25,6 +73,7 @@ updateDisplay();
 // selecting a tag which have class of calculator-keys
 // and insert it into a constant named keys
 const keys = document.querySelector('.calculator-keys');
+
 // add event listener to constant named keys
 // listener for click event
 // addEventListener(type, listener)
@@ -37,12 +86,14 @@ keys.addEventListener('click', (event) => {
   }
 
   if(target.classList.contains('operator')){
-    console.log('operator', target.value);
+    handleOperator(target.value);
+    updateDisplay();
     return;
   }
 
   if (target.classList.contains('decimal')) {
-    console.log('decimal', target.value);
+    inputDecimal(target.value);
+    updateDisplay();
     return
   }
 
