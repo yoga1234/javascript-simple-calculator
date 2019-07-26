@@ -24,6 +24,10 @@ function inputDigit(digit){
 
 // this function is for inputing decimal
 function inputDecimal(dot){
+  if (calculator.waitingForSecondOperand === true) {
+    return;
+  }
+
   // if the displayValue does not container a decimal point
   if (!calculator.displayValue.includes(dot)) {
     // append the decimal point
@@ -36,9 +40,15 @@ function handleOperator(nextOperator){
   const { firstOperand, displayValue, operator } = calculator;
   const inputValue = parseFloat(displayValue);
 
+  if(operator && calculator.waitingForSecondOperand){
+    calculator.operator = nextOperator;
+    console.log(calculator);
+    return;
+  }
+
   // Storing result in first operand if it does not exist already
-  if(firstOperand === null){
-    calculator.firstOperan = inputValue;
+  if(firstOperand == null){
+    calculator.firstOperand = inputValue;
   } else if(operator) {
     const result = performCalculation[operator](firstOperand, inputValue);
 
@@ -60,6 +70,14 @@ const performCalculation = {
   '=': (firstOperand, secondOperand) => secondOperand
 };
 
+// reset the calculator
+function resetCalculator(){
+  calculator.displayValue = '0';
+  calculator.firstOperand = null;
+  calculator.waitingForSecondOperand = false;
+  calculator.operator = null;
+  console.log(calculator);
+}
 
 // function for updating the calculator screen
 function updateDisplay(){
@@ -98,7 +116,8 @@ keys.addEventListener('click', (event) => {
   }
 
   if(target.classList.contains('all-clear')){
-    console.log('clear', target.value);
+    resetCalculator();
+    updateDisplay();
     return;
   }
 
